@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Invitation Letter Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+      background-color: #f9f9f9;
+    }
+    input, button {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    h2 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>Download Your Invitation Letter</h2>
+  
+  <label for="title">Title/Position:</label>
+  <input type="text" id="title" placeholder="e.g., Professor, Dr., Mr., Ms." />
+
+  <label for="name">Full Name:</label>
+  <input type="text" id="name" placeholder="e.g., Jane Doe" />
+
+  <label for="school">Institution (School and Department):</label>
+  <input type="text" id="school" placeholder="e.g., Taipei Medical University, School of Nursing" />
+
+  <button onclick="generatePDF()">Download Invitation Letter (PDF)</button>
+
+  <script>
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      const title = document.getElementById('title').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const school = document.getElementById('school').value.trim();
+
+      if (!title || !name || !school) {
+        alert("Please enter your title, name, and institution.");
+        return;
+      }
+
+      const today = new Date();
+      const dateString = today.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = "https://tmusg.s3.ap-northeast-1.amazonaws.com/tmu_letterhead_bg.png";
+
+      img.onload = () => {
+        doc.addImage(img, "PNG", 0, 0, 210, 297);
+
+        const bodyContent = `
+College of Nursing
+Taipei Medical University
+${dateString}
+
+${title} ${name}
+${school}
+
+Dear ${title} ${name},
+
+On behalf of the College of Nursing at Taipei Medical University, it is our great pleasure to invite you to attend the International Conference on “Enhancing the Nurses’ Role in Value-Based Healthcare,” which will be held from November 6–7, 2025, at the Tang Young Chew International Conference Hall, Taipei Medical University, Taipei, Taiwan.
+
+This conference brings together nursing scholars, educators, and professionals from across Asia and beyond. It aims to foster academic exchange and collaboration on topics related to innovation, technology application, and evidence-based care in the nursing field.
+
+You are warmly invited to join us in Taipei for this exciting event. We believe your participation will contribute to meaningful dialogue and shared learning across the global nursing community.
+
+Please feel free to contact us if you require any supporting documents or additional information for your participation.
+
+We look forward to welcoming you to Taipei.
+        `;
+
+        const signature = `
+Warm regards,
+
+Pei-Shan Tsai, PhD, RN  
+Dean  
+College of Nursing  
+Taipei Medical University
+        `;
+
+        const lines = doc.splitTextToSize(bodyContent.trim(), 180);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(lines, 15, 25);
+
+        // Move signature down by 20mm from the end of the body text
+        const textHeight = lines.length * 5;
+        const sigLines = doc.splitTextToSize(signature.trim(), 180);
+        doc.text(sigLines, 15, 25 + textHeight + 20);
+
+        doc.save(`Invitation_Letter_${title}_${name}.pdf`);
+      };
+
+      img.onerror = () => {
+        alert("Failed to load background image.");
+      };
+    }
+  </script>
+</body>
+</html>
